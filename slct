@@ -1,0 +1,111 @@
+import maya.cmds as cmds
+
+def setupEdgeCurves(thickness, color_index):
+    object_name = "Guide_Highlight_Selection"
+    if cmds.objExists(object_name):
+        cmds.delete(object_name)
+    
+    #get edge numbers of selected object and convert name to remove u
+    objList = cmds.ls(selection=True)
+    edgeNum = cmds.polyEvaluate(edge=1)
+    i, edgeList= 0, []
+    
+
+    selObj = cmds.ls(selection=True)
+    newSelObj  = [str(obj) for obj in selObj]
+    
+    #convert selection to edges
+    cmds.select(cmds.polyListComponentConversion(toEdge=True), replace=True)
+    
+    #create curves for each edge
+    i=0
+    for i in range(edgeNum):
+        edgeName = newSelObj[0] + ".e[" + str(i) + "]"
+        cmds.select(edgeName, replace=True)
+        cmds.polyToCurve(form=2, degree=1)
+    
+    #select the curveShapes
+    i=0
+    for i in range(edgeNum):
+        j = i+1
+        curveName = "polyToCurveShape" + str(j)
+        cmds.select(curveName, add=True)
+    
+    #Parent Curve Shapes into Group
+    curves = cmds.ls(selection=True)
+    curvesGroup = cmds.group(empty=True, name = "Guide_Highlight_Selection")
+    cmds.parent(curves, curvesGroup, relative=True, shape=True)
+    
+    #clear and select emptyShapes
+    cmds.select(clear=True)
+    
+    i=0
+    for i in range(edgeNum):
+        j = i+1
+        curveName = "polyToCurve" + str(j)
+        cmds.select(curveName, add=True)
+    
+    #delete old stuff and select curves
+    origCurves = cmds.ls(selection=True)
+    cmds.delete(origCurves)
+    
+    #Set Line Thickness
+    for i in range(edgeNum):
+        j = i+1
+        cmds.setAttr("polyToCurveShape" + str(j) + ".lineWidth", thickness)
+        cmds.setAttr("polyToCurveShape" + str(j) + ".overrideEnabled", 1)
+        cmds.setAttr("polyToCurveShape" + str(j) + ".overrideColor", color_index)
+    
+    #select original object
+    cmds.select(objList)
+
+# Variable to store the last selected checkbox
+last_checkbox = None
+
+def toggle_selection(obj_name, checkbox_name):
+    global last_checkbox
+
+    # Uncheck the last selected checkbox if it's not the current one
+    if last_checkbox and last_checkbox != checkbox_name:
+        cmds.checkBox(last_checkbox, edit=True, value=False)
+    
+    # Update the last selected checkbox
+    last_checkbox = checkbox_name
+
+    # Check if the checkbox is checked
+    if cmds.checkBox(checkbox_name, query=True, value=True):
+        cmds.select(obj_name, replace=True)  # Use replace=True to clear previous selections
+    else:
+        # Deselect the object if it's currently selected
+        if obj_name in cmds.ls(selection=True):
+            cmds.select(obj_name, deselect=True)
+    
+    hightlightObj(10, 6)
+
+def create_select_window():
+    if cmds.window("selectWindow", exists=True):
+        cmds.deleteUI("selectWindow", window=True)
+    
+    window = cmds.window("selectWindow", title="Select Objects", widthHeight=(300, 150))
+    cmds.columnLayout(adjustableColumn=True)
+    
+    # List of predefined objects
+    predefined_objects = ["pCube1", "pPlane1", "pCylinder1"]
+    
+    # Dictionary to keep track of checkboxes
+    checkboxes = {}
+    
+    # Create a checkbox for each object
+    for obj in predefined_objects:
+        # Create a checkbox with a unique name
+        checkbox_name = cmds.checkBox(label=obj, value=False)
+        checkboxes[obj] = checkbox_name
+        # Add a callback to the checkbox to toggle selection
+        cmds.checkBox(checkbox_name, edit=True, changeCommand=lambda x, o=obj, cb=checkbox_name: toggle_selection(o, cb))
+    
+    cmds.showWindow(window)
+
+# Run the function to create the window
+create_select_window()
+    
+    
