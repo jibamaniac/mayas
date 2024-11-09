@@ -17,22 +17,32 @@ def create_window():
     }
 
     cmds.text(label="Quality Checks", align="center", font="boldLabelFont", backgroundColor=(0.7, 0.7, 0.7))
-    buttons = [('Toggle WireFrame', ToggleWireframeonShaded), ('Toggle HUD', toggleHud), ('Toggle Xray', toggleXray)]
-    [cmds.button(label=lbl, backgroundColor=(.15, .25, .5), width=125, command=cmd) for lbl, cmd in buttons]
+    cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
+    for label, command in [('Toggle WireFrame', ToggleWireframeonShaded), ('Toggle HUD', toggleHud), ('Toggle Xray', toggleXray)]:
+        cmds.button(label=label, backgroundColor=(.15, .25, .5), width=125, command=command)
+    cmds.setParent('..')
 
+    cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
     for label, command in [('Perimeter', getEdges), ('Triangles', getTris), ('NGons', getnGons)]:
         cmds.button(label=label, backgroundColor=(.15, .25, .5), width=125, command=command)
+    cmds.setParent('..')
 
+    cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
     for label, command in [('Hard Edges', disHardEdgs), ('Standard Edges', disStandEdgs), ('Check Non Manifold', getNonMan)]:
         cmds.button(label=label, backgroundColor=(.15, .25, .5), width=125, command=command)
+    cmds.setParent('..')
 
     cmds.text(label="Check LOD Vertex Count", align="center", font="boldLabelFont", backgroundColor=(0.7, 0.7, 0.7))
+    cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
     for label, command in [('LOD0 Vertex Count', lod0), ('LOD1 Vertex Count', lod1), ('LOD2 Vertex Count', lod2)]:
         cmds.button(label=label, backgroundColor=(.15, .25, .5), width=125, command=command)
+    cmds.setParent('..')
 
     cmds.text(label="Hard/Soft Normals & Check Naming", align="center", font="boldLabelFont", backgroundColor=(0.7, 0.7, 0.7))
+    cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
     for label, command in [('Hard Text Border', hardBorder), ('All Soft', lod1), ('Check Asset Naming', finalCheckNamingConvention)]:
         cmds.button(label=label, backgroundColor=(.15, .25, .5), width=125, command=command)
+    cmds.setParent('..')
 
     global checkGreen, checkBlue, checkYellow, rayCheckBox
     checkGreen = cmds.checkBox(label="Texel Density", changeCommand=texelDensity)
@@ -45,6 +55,7 @@ def create_window():
     cmds.rowLayout(numberOfColumns=3, columnAlign=(1, 'center'), columnAttach=(1, 'both', 5))
     global x_field, y_field, z_field
     x_field, y_field, z_field = [cmds.floatField(minValue=-1, maxValue=1, precision=5, step=0.01, width=125) for _ in range(3)]
+    cmds.setParent('..')
 
     cmds.button(label="Ray To Target", command=on_general_button_v2, backgroundColor=(0.3, 0.5, 0.7))
     cmds.button(label="Clean Up", command=on_cleanUp, backgroundColor=(0.5, 0.7, 0.9))
