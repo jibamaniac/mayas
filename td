@@ -127,3 +127,87 @@ if not QtWidgets.QApplication.instance():
 # Create and show the window
 window = DependentDropdownsWindow()
 window.show()
+
+
+#Update Window
+from PySide2 import QtWidgets, QtCore
+
+class DependentDropdownsWindow(QtWidgets.QWidget):
+    def __init__(self):
+        super(DependentDropdownsWindow, self).__init__()
+
+        self.setWindowTitle("Geo Checks")  # Set the window title to "Geo Checks"
+
+        # Predefined dictionaries
+        self.menu_normal = {
+            "": [""], 
+            "Top": ["", "body_assetOut", "tops_untucked_assetOut", "tops_collar_assetOut", "tops_collar_assetIn"], 
+            "Bottom": ["", "body_assetOut", "bottom_pant_guide_assetIn", "bottom_belt_guide_assetIn", "bottom_long_loose_ftwr_assetOut", "bottom_joggers_assetIn", "bottom_long_tight_assetIn", "bottom_short_skirt_assetIn"],
+            "One_Piece": ["", "body_assetOut", "collar_assetOut", "collar_assetIn", "footwear_inner_assetOut", "footwear_outer_assetIn", "footwear_outer_assetOut", "footwear_socks_assetIn"],
+            "Outfit": ["", "body_assetOut", "collar_assetOut", "collar_assetIn", "footwear_inner_assetOut", "footwear_outer_assetIn", "footwear_outer_assetOut", "footwear_socks_assetIn", "sole_base"],
+            "Footwear":["", "body_assetOut", "footwear_inner_assetOut", "footwear_outer_assetIn", "footwear_socs_assetIn", "sole_base"]
+        }
+        
+        self.menu_ray = {
+            "": [""], 
+            "Top": ["", "waist_line_guide_geometry", "long_sleeve_length_geometry", "forearm_sleeve_length_geometry", "elbow_sleeve_length_geometry", "regular_sleeve_length_geometry", "short_sleeve_length_geometry", "tank_sleeve_length_geometry", "cropped_top__length_geometry", "ulraCrop_top_length_geometry", "cropped_top_length_geometry", "regular_top_length_geometry", "long_top_length_geometry"],
+            "Bottom": ["", "waist_line_guide_geometry", "mini_bot_length_geometry", "thigh_bo_length_geometry", "aboveKnee_bot_length_geometry", "knee_bot_length_geometry", "belowKnee_bot_length_geometry", "calf_bot_length_geometry", "cropped_bot_length_geometry", "sevenEights_bot_length_geometry", "full_bot_length_geometry"],
+            "One_Piece": ["", "long_sleeve_length_geometry", "forearm_sleeve_length_geometry", "elbow_sleeve_length_geometry", "regular_sleeve_length_geometry", "short_sleeve_length_geometry", "tank_sleeve_length_geometry", "cropped_top_length_geometry", "ultraCrop_top_length_geometry", "cropped_top_length_geometry", "regular_top_length_geometry", "long_top_length_geometry", "mini_bot_length_geometry", "thigh_bo_length_geometry", "aboveKnee_bot_length_geometry", "knee_bot_length_geometry", "belowKnee_bot_length_geometry", "calf_bot_length_geometry", "cropped_bot_length_geometry", "sevenEights_bot_length_geometry", "full_bot_length_geometry"],
+            "Outfit": ["", "soleBase_guide_geometry", "long_sleeve_length_geometry", "forearm_sleeve_length_geometry", "elbow_sleeve_length_geometry", "regular_sleeve_length_geometry", "short_sleeve_length_geometry", "tank_sleeve_length_geometry", "cropped_top__length_geometry", "ulraCrop_top_length_geometry", "cropped_top_length_geometry", "regular_top_length_geometry", "long_top_length_geometry", "mini_bot_length_geometry", "thigh_bo_length_geometry", "aboveKnee_bot_length_geometry", "knee_bot_length_geometry", "belowKnee_bot_length_geometry", "calf_bot_length_geometry", "cropped_bot_length_geometry", "sevenEights_bot_length_geometry", "full_bot_length_geometry"],
+            "Footwear":["", "soleBase_guide_geometry"]
+        }
+
+        # First drop-down menu (Category) - Custom order: "", "Top", "Bottom", "One_Piece", "Outfit", "Footwear"
+        self.first_combo = QtWidgets.QComboBox()
+        self.first_combo.addItems(["", "Top", "Bottom", "One_Piece", "Outfit", "Footwear"])  # Custom order
+        self.first_combo.currentIndexChanged.connect(self.update_second_dropdown)
+
+        # Second drop-down menu (Items)
+        self.second_combo = QtWidgets.QComboBox()
+
+        # Checkbox to toggle between two sets of item lists
+        self.checkbox = QtWidgets.QCheckBox("Use Ray List")
+        self.checkbox.toggled.connect(self.update_second_dropdown)
+
+        # Set the width for the combo boxes to make them longer
+        self.first_combo.setFixedWidth(300)
+        self.second_combo.setFixedWidth(300)
+
+        # Create the form layout
+        layout = QtWidgets.QFormLayout()
+
+        # Add the widgets directly using the form layout
+        layout.addRow("Select Category", self.first_combo)
+        layout.addRow("Select Item", self.second_combo)
+        layout.addWidget(self.checkbox)
+
+        # Set layout to the window
+        self.setLayout(layout)
+
+        # Set size policy for the window to allow resizing
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        # Initial population of the second drop-down
+        self.update_second_dropdown()
+
+    def update_second_dropdown(self):
+        """Update second drop-down based on first drop-down selection and checkbox state."""
+        category = self.first_combo.currentText()
+
+        self.second_combo.clear()  # Clear the current items in second combo
+
+        # Get the items from either menu_normal or menu_ray based on the checkbox state
+        if self.checkbox.isChecked():
+            items = self.menu_ray.get(category, [])
+        else:
+            items = self.menu_normal.get(category, [])
+
+        self.second_combo.addItems(items)
+
+# Check if QApplication exists, if not, create one
+if not QtWidgets.QApplication.instance():
+    app = QtWidgets.QApplication([])
+
+# Create and show the window
+window = DependentDropdownsWindow()
+window.show()
