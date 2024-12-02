@@ -211,3 +211,77 @@ if not QtWidgets.QApplication.instance():
 # Create and show the window
 window = DependentDropdownsWindow()
 window.show()
+
+#new 3
+from PySide2 import QtWidgets, QtCore
+import maya.OpenMayaUI as omui
+from shiboken2 import wrapInstance
+
+def get_maya_main_window():
+    """Returns Maya's main window as a PySide2 QWidget."""
+    main_window_ptr = omui.MQtUtil.mainWindow()  # Get the main window pointer from Maya
+    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)  # Wrap it to a QWidget
+
+class DependentDropdownsWindow(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super(DependentDropdownsWindow, self).__init__(parent)
+
+        self.setWindowTitle("Geo Checks")
+        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint)
+
+        self.menu_normal = {
+            "": [""], 
+            "Top": ["", "body_assetOut", "tops_untucked_assetOut", "tops_collar_assetOut"],
+            "Bottom": ["", "body_assetOut", "bottom_pant_guide_assetIn"],
+            "Footwear": ["", "sole_base"]
+        }
+
+        self.menu_ray = {
+            "": [""], 
+            "Top": ["", "waist_line_guide_geometry", "long_sleeve_length_geometry"],
+            "Bottom": ["", "waist_line_guide_geometry", "mini_bot_length_geometry"],
+            "Footwear": ["", "soleBase_guide_geometry"]
+        }
+
+        self.first_combo = QtWidgets.QComboBox()
+        self.first_combo.addItems(["", "Top", "Bottom", "Footwear"])
+        self.first_combo.currentIndexChanged.connect(self.update_second_dropdown)
+
+        self.second_combo = QtWidgets.QComboBox()
+
+        self.checkbox_use_ray = QtWidgets.QCheckBox("Use Ray List")
+        self.checkbox_use_ray.toggled.connect(self.update_second_dropdown)
+
+        self.first_combo.setFixedWidth(300)
+        self.second_combo.setFixedWidth(300)
+
+        layout = QtWidgets.QFormLayout()
+        layout.addRow("Select Category", self.first_combo)
+        layout.addRow("Select Item", self.second_combo)
+        layout.addWidget(self.checkbox_use_ray)
+
+        self.setLayout(layout)
+        self.update_second_dropdown()
+
+    def update_second_dropdown(self):
+        category = self.first_combo.currentText()
+        self.second_combo.clear()
+        if self.checkbox_use_ray.isChecked():
+            items = self.menu_ray.get(category, [])
+        else:
+            items = self.menu_normal.get(category, [])
+        self.second_combo.addItems(items)
+
+    def is_ray_list_used(self):
+        """Returns True if 'Use Ray List' checkbox is checked, otherwise False."""
+        return self.checkbox_use_ray.isChecked()
+
+# Create and show the window
+try:
+    existing_window.close()  # Close the existing window if it exists
+except:
+    pass
+
+existing_window = DependentDropdownsWindow(parent=get_maya_main_window())
+existing_window.show()
+
